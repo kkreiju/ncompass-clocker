@@ -1,0 +1,71 @@
+import mongoose, { Document, Schema } from 'mongoose';
+
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const UserSchema: Schema = new Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+      maxlength: [100, 'Name cannot exceed 100 characters'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        'Please enter a valid email',
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters'],
+      // Removed select: false for debugging
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// // Add a pre-save hook to debug
+// UserSchema.pre<IUser>('save', function(next) {
+//   console.log('🔧 Pre-save hook triggered');
+//   console.log('📋 Document before save:', {
+//     name: this.name,
+//     email: this.email,
+//     hasPassword: !!this.password,
+//     passwordLength: this.password?.length || 0
+//   });
+//   next();
+// });
+
+// // Add a post-save hook to debug
+// UserSchema.post<IUser>('save', function(doc) {
+//   console.log('✅ Post-save hook triggered');
+//   console.log('📋 Document after save:', {
+//     _id: doc._id,
+//     name: doc.name,
+//     email: doc.email,
+//     hasPassword: !!doc.password,
+//     passwordLength: doc.password?.length || 0
+//   });
+// });
+
+// Clear the model if it exists (for hot reload in development)
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+export default mongoose.model<IUser>('User', UserSchema);

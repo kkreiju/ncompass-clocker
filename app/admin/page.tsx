@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function UserLogin() {
+export default function AdminLogin() {
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function UserLogin() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/user-login', {
+      const response = await fetch('/api/auth/admin-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,8 +30,8 @@ export default function UserLogin() {
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userType', 'user');
-        router.push('/dashboard');
+        localStorage.setItem('userType', 'admin');
+        router.push('/admin-dashboard');
       } else {
         setError(data.error || 'Login failed');
       }
@@ -43,31 +43,31 @@ export default function UserLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4" style={{background: 'linear-gradient(135deg, var(--background) 0%, #e0e7ff 100%)'}}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{background: 'var(--background)'}}>
       <div className="max-w-md w-full rounded-xl shadow-lg p-8" style={{backgroundColor: 'var(--surface)'}}>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>NCompass</h1>
-          <p style={{color: 'var(--text-secondary)'}}>Employee Login</p>
+          <p style={{color: 'var(--text-secondary)'}}>Admin Portal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2" style={{color: 'var(--text-primary)'}}>
-              Email Address
+            <label htmlFor="username" className="block text-sm font-medium mb-2" style={{color: 'var(--text-primary)'}}>
+              Username
             </label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               className="w-full px-4 py-3 rounded-lg focus:ring-2 outline-none transition-colors"
               style={{
                 border: '1px solid var(--border)',
                 backgroundColor: 'var(--surface)',
                 color: 'var(--text-primary)'
               }}
-              placeholder="Enter your email"
+              placeholder="Enter your username"
             />
           </div>
 
@@ -120,14 +120,14 @@ export default function UserLogin() {
               }
             }}
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? 'Signing In...' : 'Admin Sign In'}
           </button>
         </form>
 
         <div className="mt-8 pt-6" style={{borderTop: '1px solid var(--border)'}}>
-          <div className="text-center space-y-4">
+          <div className="text-center">
             <a
-              href="/admin"
+              href="/"
               className="text-sm font-medium"
               style={{color: 'var(--primary)'}}
               onMouseEnter={(e) => {
@@ -137,23 +137,8 @@ export default function UserLogin() {
                 e.currentTarget.style.color = 'var(--primary)';
               }}
             >
-              Admin Login
+              ← Back to Employee Login
             </a>
-            <div className="text-sm" style={{color: 'var(--text-secondary)'}}>
-              <a
-                href="/attendance"
-                className="font-medium"
-                style={{color: 'var(--primary)'}}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--primary-dark)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--primary)';
-                }}
-              >
-                Clock In/Out (No Login Required)
-              </a>
-            </div>
           </div>
         </div>
       </div>
