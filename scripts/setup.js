@@ -41,11 +41,11 @@ function questionHidden(query) {
     process.stdin.setRawMode(true);
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
-    
+
     let password = '';
     process.stdin.on('data', function(char) {
       char = char + '';
-      
+
       switch(char) {
         case '\n':
         case '\r':
@@ -102,7 +102,7 @@ async function setupAdmin() {
 
     // Get admin credentials
     console.log('Please enter the admin credentials:\n');
-    
+
     const username = await question('Username (min 3 characters): ');
     if (!username || username.length < 3) {
       console.error('❌ Username must be at least 3 characters long');
@@ -143,7 +143,7 @@ async function setupAdmin() {
     console.log('📋 Admin Details:');
     console.log(`   Username: ${admin.username}`);
     console.log(`   Created: ${admin.createdAt}\n`);
-    
+
     console.log('🎉 Setup complete! You can now:');
     console.log('   1. Start the development server: npm run dev');
     console.log('   2. Visit http://localhost:3000/admin');

@@ -1,38 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import User from '@/models/Admin'; // Note: Admin.ts contains User model
+import User from '@/models/User';
 import { AuthService } from '@/lib/auth';
 
-// Middleware to verify admin token
-async function verifyAdminToken(request: NextRequest) {
-  const token = AuthService.getTokenFromRequest(request);
-  if (!token) {
-    return null;
-  }
-
-  const payload = AuthService.verifyToken(token);
-  if (!payload || payload.type !== 'admin') {
-    return null;
-  }
-
-  return payload;
-}
-
-// GET - Fetch all users (Admin only)
 export async function GET(request: NextRequest) {
   try {
-    const adminPayload = await verifyAdminToken(request);
-    if (!adminPayload) {
+    await connectDB();
+
+    const token = AuthService.getTokenFromRequest(request);
+    if (!token) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
+        { error: 'Unauthorized. Token required.' },
         { status: 401 }
       );
     }
 
-    await connectDB();
-    
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
-    
+    const payload = AuthService.verifyToken(token);
+    if (!payload || payload.type !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required.' },
+        { status: 403 }
+      );
+    }
+
+    // Get all users (admin only)
+    const users = await User.find({}, '-password').sort({ createdAt: -1 });
+
     return NextResponse.json({
       success: true,
       users
@@ -47,24 +40,31 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new user (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    const adminPayload = await verifyAdminToken(request);
-    if (!adminPayload) {
+    await connectDB();
+
+    const token = AuthService.getTokenFromRequest(request);
+    if (!token) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
+        { error: 'Unauthorized. Token required.' },
         { status: 401 }
       );
     }
 
-    await connectDB();
-    
+    const payload = AuthService.verifyToken(token);
+    if (!payload || payload.type !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required.' },
+        { status: 403 }
+      );
+    }
+
     const { name, email, password } = await request.json();
 
     if (!name || !email || !password) {
       return NextResponse.json(
-        { error: 'Name, email, and password are required' },
+        { error: 'Name, email, and password are required.' },
         { status: 400 }
       );
     }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { error: 'User with this email already exists.' },
         { status: 409 }
       );
     }
@@ -81,27 +81,20 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await AuthService.hashPassword(password);
 
-    // Create new user
+    // Create user
     const user = await User.create({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      password: hashedPassword
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
     });
 
     // Return user without password
-    const userResponse = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    };
+    const { password: _, ...userWithoutPassword } = user.toObject();
 
     return NextResponse.json({
       success: true,
-      message: 'User created successfully',
-      user: userResponse
-    }, { status: 201 });
+      user: userWithoutPassword
+    });
 
   } catch (error) {
     console.error('Create user error:', error);
@@ -112,24 +105,31 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update user (Admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const adminPayload = await verifyAdminToken(request);
-    if (!adminPayload) {
+    await connectDB();
+
+    const token = AuthService.getTokenFromRequest(request);
+    if (!token) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
+        { error: 'Unauthorized. Token required.' },
         { status: 401 }
       );
     }
 
-    await connectDB();
-    
+    const payload = AuthService.verifyToken(token);
+    if (!payload || payload.type !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required.' },
+        { status: 403 }
+      );
+    }
+
     const { userId, name, email, password } = await request.json();
 
     if (!userId || !name || !email) {
       return NextResponse.json(
-        { error: 'User ID, name, and email are required' },
+        { error: 'User ID, name, and email are required.' },
         { status: 400 }
       );
     }
@@ -138,19 +138,19 @@ export async function PUT(request: NextRequest) {
     const existingUser = await User.findById(userId);
     if (!existingUser) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User not found.' },
         { status: 404 }
       );
     }
 
     // Check if email is already taken by another user
-    const emailExists = await User.findOne({ 
-      email: email.toLowerCase(), 
-      _id: { $ne: userId } 
+    const emailExists = await User.findOne({
+      email: email.toLowerCase(),
+      _id: { $ne: userId }
     });
     if (emailExists) {
       return NextResponse.json(
-        { error: 'Email is already taken by another user' },
+        { error: 'Email is already taken by another user.' },
         { status: 409 }
       );
     }
@@ -176,7 +176,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'User updated successfully',
+      message: 'User updated successfully.',
       user: updatedUser
     });
 
@@ -189,25 +189,32 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete user (Admin only)
 export async function DELETE(request: NextRequest) {
   try {
-    const adminPayload = await verifyAdminToken(request);
-    if (!adminPayload) {
+    await connectDB();
+
+    const token = AuthService.getTokenFromRequest(request);
+    if (!token) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
+        { error: 'Unauthorized. Token required.' },
         { status: 401 }
       );
     }
 
-    await connectDB();
-    
+    const payload = AuthService.verifyToken(token);
+    if (!payload || payload.type !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required.' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
     if (!userId) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'User ID is required.' },
         { status: 400 }
       );
     }
@@ -216,7 +223,7 @@ export async function DELETE(request: NextRequest) {
     const existingUser = await User.findById(userId);
     if (!existingUser) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User not found.' },
         { status: 404 }
       );
     }
@@ -226,7 +233,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'User deleted successfully'
+      message: 'User deleted successfully.'
     });
 
   } catch (error) {

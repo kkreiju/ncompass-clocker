@@ -67,12 +67,12 @@ export function getAttendanceCollectionName(date: Date = new Date()): string {
 // Utility function to get model for specific month
 export function getAttendanceModel(date: Date = new Date()): Model<IAttendanceLog> {
   const collectionName = getAttendanceCollectionName(date);
-  
+
   // Check if model already exists
   if (mongoose.models[collectionName]) {
     return mongoose.models[collectionName] as Model<IAttendanceLog>;
   }
-  
+
   // Create new model for this collection
   return mongoose.model<IAttendanceLog>(collectionName, AttendanceLogSchema, collectionName);
 }
@@ -90,24 +90,24 @@ export function getAttendanceModelsForRange(startDate: Date, endDate: Date): Arr
     month: number;
     year: number;
   }> = [];
-  
+
   const current = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
   const end = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
-  
+
   while (current <= end) {
     const collectionName = getAttendanceCollectionName(current);
     const model = getAttendanceModel(current);
-    
+
     models.push({
       model,
       collectionName,
       month: current.getMonth() + 1,
       year: current.getFullYear(),
     });
-    
+
     current.setMonth(current.getMonth() + 1);
   }
-  
+
   return models;
 }
 
@@ -123,22 +123,22 @@ export class AttendanceService {
     qrCodeId?: string;
   }): Promise<IAttendanceLog> {
     const timestamp = data.timestamp || new Date();
-    
+
     let action = data.action;
-    
+
     // Auto-detect action if not provided
     if (!action) {
       const lastAction = await this.getLastAttendanceAction(data.userId);
-      
+
       if (!lastAction || lastAction.action === 'clock-out') {
         action = 'clock-in';
       } else {
         action = 'clock-out';
       }
     }
-    
+
     const AttendanceModel = getAttendanceModel(timestamp);
-    
+
     const attendanceLog = await AttendanceModel.create({
       userId: data.userId,
       userName: data.userName,
@@ -147,20 +147,20 @@ export class AttendanceService {
       timestamp,
       qrCodeId: data.qrCodeId,
     });
-    
+
     return attendanceLog;
   }
-  
+
   // Get attendance logs for a user in a specific month
   static async getUserAttendanceForMonth(
-    userId: string, 
+    userId: string,
     date: Date = new Date()
   ): Promise<IAttendanceLog[]> {
     const AttendanceModel = getAttendanceModel(date);
-    
+
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
-    
+
     return await AttendanceModel.find({
       userId,
       timestamp: {
@@ -169,7 +169,7 @@ export class AttendanceService {
       },
     }).sort({ timestamp: -1 });
   }
-  
+
   // Get attendance logs for a user across multiple months
   static async getUserAttendanceForRange(
     userId: string,
@@ -178,7 +178,7 @@ export class AttendanceService {
   ): Promise<IAttendanceLog[]> {
     const models = getAttendanceModelsForRange(startDate, endDate);
     const allLogs: IAttendanceLog[] = [];
-    
+
     for (const { model } of models) {
       const logs = await model.find({
         userId,
@@ -189,18 +189,18 @@ export class AttendanceService {
       });
       allLogs.push(...logs);
     }
-    
+
     // Sort by timestamp descending
     return allLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
-  
+
   // Get all attendance logs for a specific month
   static async getAllAttendanceForMonth(date: Date = new Date()): Promise<IAttendanceLog[]> {
     const AttendanceModel = getAttendanceModel(date);
-    
+
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
-    
+
     return await AttendanceModel.find({
       timestamp: {
         $gte: startOfMonth,
@@ -208,13 +208,13 @@ export class AttendanceService {
       },
     }).sort({ timestamp: -1 });
   }
-  
+
   // Get user's last attendance action
   static async getLastAttendanceAction(userId: string): Promise<IAttendanceLog | null> {
     // Check current month first
     const currentModel = getAttendanceModel();
     let lastLog = await currentModel.findOne({ userId }).sort({ timestamp: -1 });
-    
+
     if (!lastLog) {
       // Check previous month if nothing found in current month
       const prevMonth = new Date();
@@ -222,7 +222,7 @@ export class AttendanceService {
       const prevModel = getAttendanceModel(prevMonth);
       lastLog = await prevModel.findOne({ userId }).sort({ timestamp: -1 });
     }
-    
+
     return lastLog;
   }
 }

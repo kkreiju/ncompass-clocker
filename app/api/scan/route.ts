@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import User from '@/models/Admin'; // Note: Admin.ts contains User model
+import User from '@/models/User';
 import { AttendanceService } from '@/models/AttendanceLog';
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    
-    const { qrCode } = await request.json();
 
-    if (!qrCode) {
+    const body = await request.json();
+    const { qrCodeData } = body;
+
+    if (!qrCodeData) {
       return NextResponse.json(
-        { error: 'QR code is required' },
+        { error: 'QR code data is required' },
         { status: 400 }
       );
     }
 
     // Find user by name (QR code contains the user's name)
-    const user = await User.findOne({ name: qrCode });
+    const user = await User.findOne({ name: qrCodeData });
     if (!user) {
       return NextResponse.json(
         { error: 'User not found. Please contact your administrator.' },
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('QR scan error:', error);
+    console.error('Scan attendance error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

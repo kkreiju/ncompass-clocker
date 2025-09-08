@@ -1,26 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import User from '@/models/Admin'; // Note: Admin.ts contains User model
+import User from '@/models/User';
 import { AuthService } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Email and password are required.' },
         { status: 400 }
       );
     }
 
-    // Find user by email
+    // Find user
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid credentials.' },
         { status: 401 }
       );
     }
@@ -29,27 +29,28 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await AuthService.comparePassword(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid credentials.' },
         { status: 401 }
       );
     }
 
-    // Generate JWT token
+    // Generate token
     const token = AuthService.generateToken({
-      userId: (user._id as string).toString(),
+      userId: user._id.toString(),
       email: user.email,
       name: user.name,
-      type: 'user'
+      type: 'user',
     });
 
     return NextResponse.json({
       success: true,
       token,
       user: {
-        id: user._id as string,
+        id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+        type: 'user',
+      },
     });
 
   } catch (error) {

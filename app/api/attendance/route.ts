@@ -7,7 +7,7 @@ import { AuthService } from '@/lib/auth';
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    
+
     const token = AuthService.getTokenFromRequest(request);
     if (!token) {
       return NextResponse.json(
@@ -57,6 +57,53 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Get attendance error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Log attendance
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB();
+
+    const token = AuthService.getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Token required.' },
+        { status: 401 }
+      );
+    }
+
+    const payload = AuthService.verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Invalid token.' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { action, qrCodeId } = body;
+
+    // Log attendance
+    const attendanceLog = await AttendanceService.logAttendance({
+      userId: payload.userId,
+      userName: payload.name,
+      userEmail: payload.email,
+      action,
+      qrCodeId,
+    });
+
+    return NextResponse.json({
+      success: true,
+      attendance: attendanceLog
+    });
+
+  } catch (error) {
+    console.error('Log attendance error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

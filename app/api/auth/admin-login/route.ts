@@ -1,26 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import Admin from '@/models/User'; // Note: User.ts contains Admin model
+import Admin from '@/models/Admin';
 import { AuthService } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    
+
     const { username, password } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json(
-        { error: 'Username and password are required' },
+        { error: 'Username and password are required.' },
         { status: 400 }
       );
     }
 
-    // Find admin by username
+    // Find admin user
     const admin = await Admin.findOne({ username: username.toLowerCase() });
     if (!admin) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid credentials.' },
         { status: 401 }
       );
     }
@@ -29,26 +29,27 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await AuthService.comparePassword(password, admin.password);
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid credentials.' },
         { status: 401 }
       );
     }
 
-    // Generate JWT token
+    // Generate token
     const token = AuthService.generateToken({
       userId: admin._id.toString(),
       email: admin.username, // Using username as email for admin
-      name: admin.username, // Using username as name for admin
-      type: 'admin'
+      name: admin.username,
+      type: 'admin',
     });
 
     return NextResponse.json({
       success: true,
       token,
-      admin: {
+      user: {
         id: admin._id,
-        username: admin.username
-      }
+        username: admin.username,
+        type: 'admin',
+      },
     });
 
   } catch (error) {
