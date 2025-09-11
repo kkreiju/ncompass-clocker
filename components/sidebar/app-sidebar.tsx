@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -20,6 +21,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
 
@@ -30,11 +34,6 @@ const data = {
     email: "team@n-compass.biz",
     avatar: "/ncompass-logo.svg",
   },
-  teams: [
-    { name: "N-Compass TV", logo: GalleryVerticalEnd, plan: "Enterprise" },
-    { name: "Field Ops", logo: AudioWaveform, plan: "Internal" },
-    { name: "Sandbox", logo: Command, plan: "Dev" },
-  ],
   navMain: [
     {
       title: "Dashboard",
@@ -64,7 +63,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+                <Image src="/ncompass-logo.svg" alt="N-Compass TV" width={32} height={32} />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">N-Compass TV</span>
+                <span className="truncate text-xs">Attendance System</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

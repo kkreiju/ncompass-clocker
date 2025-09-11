@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { LogOut, User } from "lucide-react"
+import Image from "next/image"
+import { LogOut, User, LayoutDashboard, ClipboardCheck } from "lucide-react"
 import { TokenPayload } from "@/lib/auth"
+import { NavMain } from "@/components/sidebar/nav-main"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -25,6 +27,21 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+// ----- USER ATTENDANCE APP DATA -----
+const userNavData = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: LayoutDashboard,
+    isActive: true,
+  },
+  {
+    title: "Attendance",
+    url: "/attendance",
+    icon: ClipboardCheck,
+  },
+]
+
 export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter()
   const [user, setUser] = useState({
@@ -40,7 +57,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
 
     // Check if the name contains any of the avatar names
     const matchingAvatar = availableAvatars.find(avatar => nameLower.includes(avatar))
-    return matchingAvatar ? `/user-profile/${matchingAvatar}.png` : "/user-profile/default.png"
+    return matchingAvatar ? `/user-profile/${matchingAvatar}.png` : "/user-profile/albores.png"
   }
 
   // Helper function to decode JWT payload (client-side only)
@@ -82,11 +99,11 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <User className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+                <Image src="/ncompass-logo.svg" alt="N-Compass TV" width={32} height={32} />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">User Panel</span>
+                <span className="truncate font-semibold">N-Compass TV</span>
                 <span className="truncate text-xs">Attendance System</span>
               </div>
             </SidebarMenuButton>
@@ -95,7 +112,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
       </SidebarHeader>
 
       <SidebarContent>
-        {/* User sidebar can have additional menu items here if needed */}
+        <NavMain items={userNavData} />
       </SidebarContent>
 
       <SidebarFooter>

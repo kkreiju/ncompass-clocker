@@ -30,7 +30,7 @@ type Item = {
 export function NavMain({ items }: { items: Item[] }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Attendance</SidebarGroupLabel>
+      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const hasChildren = !!item.items?.length
