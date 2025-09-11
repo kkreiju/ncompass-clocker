@@ -153,7 +153,7 @@ export default function UserDashboard() {
     // Process each week
     const weeklyData = Object.keys(weekGroups)
       .sort((a, b) => new Date(b).getTime() - new Date(a).getTime()) // Most recent first
-      .slice(0, 4) // Show last 4 weeks
+      .slice(0, 2) // Show last 2 weeks
       .map(weekKey => {
         const weekRecords = weekGroups[weekKey];
         const weekStart = new Date(weekKey);
