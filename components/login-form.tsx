@@ -136,7 +136,7 @@ export function LoginForm({
                     <Input
                       id="email"
                       type="email"
-                      placeholder="m@example.com"
+                      placeholder="example@n-compass.biz"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -182,16 +182,7 @@ export function LoginForm({
                     <Button type="submit" className="w-full" disabled={loading}>
                       {loading ? 'Signing in...' : 'Login'}
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      Login with Google
-                    </Button>
                   </div>
-                </div>
-                <div className="mt-4 text-center text-sm">
-                  Don&apos;t have an account?{" "}
-                  <a href="#" className="underline underline-offset-4">
-                    Sign up
-                  </a>
                 </div>
               </form>
             </TabsContent>
