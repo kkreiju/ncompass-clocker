@@ -11,9 +11,8 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Clock, Calendar, Activity, QrCode, Calculator } from "lucide-react"
+import { Clock, Calendar, Activity, QrCode } from "lucide-react"
 
 interface AttendanceRecord {
   _id: string;
@@ -69,30 +68,6 @@ export default function UserDashboard() {
     }
   };
 
-  const handleClockAction = async () => {
-    try {
-      const token = localStorage.getItem('userToken');
-      const action = currentStatus === 'clocked-in' ? 'clock-out' : 'clock-in';
-
-      const response = await fetch('/api/attendance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ action })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Refresh attendance data
-        fetchAttendance();
-        setCurrentStatus(action === 'clock-in' ? 'clocked-in' : 'clocked-out');
-      }
-    } catch (error) {
-      console.error('Error clocking in/out:', error);
-    }
-  };
 
   const getTodayStats = () => {
     const today = new Date().toDateString();
@@ -149,13 +124,6 @@ export default function UserDashboard() {
                     {currentStatus === 'clocked-in' ? 'Clocked In' : 'Clocked Out'}
                   </Badge>
                 </div>
-                <Button
-                  onClick={handleClockAction}
-                  className="w-full"
-                  size="lg"
-                >
-                  {currentStatus === 'clocked-in' ? 'Clock Out' : 'Clock In'}
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -225,7 +193,7 @@ export default function UserDashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardContent className="p-6 text-center">
               <QrCode className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
@@ -239,14 +207,6 @@ export default function UserDashboard() {
               <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
               <h3 className="font-semibold mb-1">View History</h3>
               <p className="text-sm text-muted-foreground">Check past attendance</p>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/rates')}>
-            <CardContent className="p-6 text-center">
-              <Calculator className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-              <h3 className="font-semibold mb-1">Rate Calculator</h3>
-              <p className="text-sm text-muted-foreground">Calculate employee pay rates</p>
             </CardContent>
           </Card>
         </div>

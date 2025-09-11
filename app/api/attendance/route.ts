@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
       // Users can only see their own attendance records
       if (month && year) {
         const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+        console.log(payload.userId, date);
         attendance = await AttendanceService.getUserAttendanceForMonth(payload.userId, date);
       } else {
-        // Default to current month
         attendance = await AttendanceService.getUserAttendanceForMonth(payload.userId);
       }
     }
