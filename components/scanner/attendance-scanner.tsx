@@ -37,6 +37,8 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
   const [scanHistory, setScanHistory] = useState<ScanResult[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
+  const processingRef = useRef(false);
+  const lastProcessedCodeRef = useRef<string>('');
 
   useEffect(() => {
     startScanning();
@@ -62,18 +64,25 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
         {
           highlightScanRegion: true,
           highlightCodeOutline: true,
-          maxScansPerSecond: 25, // Increase scan frequency for faster detection
+          maxScansPerSecond: 50, // Increased scan frequency for faster detection
           preferredCamera: 'environment', // Use back camera on mobile for better performance
+          calculateScanRegion: (video) => ({
+            // Optimize scan region for better performance and speed
+            x: 0.1 * video.videoWidth,
+            y: 0.1 * video.videoHeight,
+            width: 0.8 * video.videoWidth,
+            height: 0.8 * video.videoHeight,
+          }),
         }
       );
 
       // Set camera preferences for better performance
       await qrScannerRef.current.start();
 
-      // Optimize camera settings for speed
+      // Optimize camera settings for speed and reliability
       if (qrScannerRef.current) {
         // Set higher resolution for better detection but balance with performance
-        qrScannerRef.current.setCamera('environment').catch(() => {
+        await qrScannerRef.current.setCamera('environment').catch(() => {
           // Fallback to default camera if environment camera fails
           console.log('Environment camera not available, using default');
         });
@@ -98,13 +107,17 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
   const handleScanResult = async (qrCode: string) => {
     const currentTime = Date.now();
 
-    // Debounce: prevent scanning the same code within 2 seconds
-    if (qrCode === lastScannedCode && currentTime - lastScanTime < 2000) {
+    // Debounce: prevent scanning the same code within 3 seconds
+    if ((qrCode === lastScannedCode && currentTime - lastScanTime < 3000) ||
+        qrCode === lastProcessedCodeRef.current) {
       return;
     }
 
-    // Prevent multiple simultaneous scans
-    if (loading) return;
+    // Prevent multiple simultaneous scans and API calls
+    if (loading || processingRef.current) return;
+
+    processingRef.current = true;
+    lastProcessedCodeRef.current = qrCode;
 
     setLastScannedCode(qrCode);
     setLastScanTime(currentTime);
@@ -168,14 +181,10 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
       // Notify parent component
       onScanResult?.(scanResult);
 
-      // Show error for 3 seconds, then restart scanning
-      setTimeout(() => {
-        setMessage('');
-        setResult('');
-        startScanning();
-      }, 3000);
+      // Do not auto-restart scanning on error - let user manually restart
     } finally {
       setLoading(false);
+      processingRef.current = false;
     }
   };
 
