@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, qrCodeId } = body;
+    const { action, workplace, qrCodeId } = body;
 
     // Log attendance
     const attendanceLog = await AttendanceService.logAttendance({
@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
       userName: payload.name,
       userEmail: payload.email,
       action,
+      workplace,
       qrCodeId,
     });
 

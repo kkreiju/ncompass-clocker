@@ -6,6 +6,7 @@ export interface IAttendanceLog extends Document {
   userEmail: string;
   action: 'clock-in' | 'clock-out';
   timestamp: Date;
+  workplace: 'office' | 'home';
   qrCodeId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +41,12 @@ const AttendanceLogSchema: Schema = new Schema(
       type: Date,
       required: [true, 'Timestamp is required'],
       index: true,
+    },
+    workplace: {
+      type: String,
+      enum: ['office', 'home'],
+      required: [true, 'Workplace is required'],
+      default: 'office',
     },
     qrCodeId: {
       type: Schema.Types.ObjectId,
@@ -120,6 +127,7 @@ export class AttendanceService {
     userEmail: string;
     action?: 'clock-in' | 'clock-out'; // Optional - will auto-detect if not provided
     timestamp?: Date;
+    workplace?: 'office' | 'home'; // Optional - defaults to 'office'
     qrCodeId?: string;
   }): Promise<IAttendanceLog> {
     const timestamp = data.timestamp || new Date();
@@ -139,12 +147,17 @@ export class AttendanceService {
 
     const AttendanceModel = getAttendanceModel(timestamp);
 
+    // Determine workplace from STATION environment variable or provided value
+    const defaultWorkplace = process.env.STATION === 'home' ? 'home' : 'office';
+    const workplace = data.workplace || defaultWorkplace;
+
     const attendanceLog = await AttendanceModel.create({
       userId: data.userId,
       userName: data.userName,
       userEmail: data.userEmail,
       action,
       timestamp,
+      workplace,
       qrCodeId: data.qrCodeId,
     });
 
@@ -224,6 +237,163 @@ export class AttendanceService {
     }
 
     return lastLog;
+  }
+
+  // Get late entries for a date range
+  static async getLateEntries(startDate: Date, endDate: Date): Promise<Array<{
+    userId: string;
+    userName: string;
+    userEmail: string;
+    date: string;
+    clockInTime: Date;
+    lateMinutes: number;
+  }>> {
+    const models = getAttendanceModelsForRange(startDate, endDate);
+    const lateEntries: Array<{
+      userId: string;
+      userName: string;
+      userEmail: string;
+      date: string;
+      clockInTime: Date;
+      lateMinutes: number;
+    }> = [];
+
+    // Group attendance by user and date
+    const userDailyAttendance: { [key: string]: { [key: string]: IAttendanceLog[] } } = {};
+
+    for (const { model } of models) {
+      const logs = await model.find({
+        timestamp: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+        action: 'clock-in'
+      });
+
+      for (const log of logs) {
+        const dateKey = log.timestamp.toISOString().split('T')[0]; // YYYY-MM-DD
+        const userKey = log.userId.toString();
+
+        if (!userDailyAttendance[userKey]) {
+          userDailyAttendance[userKey] = {};
+        }
+
+        if (!userDailyAttendance[userKey][dateKey]) {
+          userDailyAttendance[userKey][dateKey] = [];
+        }
+
+        userDailyAttendance[userKey][dateKey].push(log);
+      }
+    }
+
+    // Process each user's daily attendance
+    for (const [userId, dailyLogs] of Object.entries(userDailyAttendance)) {
+      for (const [dateStr, logs] of Object.entries(dailyLogs)) {
+        // Find the first clock-in of the day
+        const sortedLogs = logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        const firstClockIn = sortedLogs[0];
+
+        // Check if it's after 10:00 AM (late threshold)
+        const clockInTime = firstClockIn.timestamp;
+        const lateThreshold = new Date(clockInTime);
+        lateThreshold.setHours(10, 0, 0, 0);
+
+        if (clockInTime >= lateThreshold) {
+          const lateMinutes = Math.floor((clockInTime.getTime() - lateThreshold.getTime()) / (1000 * 60));
+
+          lateEntries.push({
+            userId,
+            userName: firstClockIn.userName,
+            userEmail: firstClockIn.userEmail,
+            date: dateStr,
+            clockInTime,
+            lateMinutes
+          });
+        }
+      }
+    }
+
+    return lateEntries.sort((a, b) => b.clockInTime.getTime() - a.clockInTime.getTime());
+  }
+
+  // Get absences for a date range
+  static async getAbsences(startDate: Date, endDate: Date): Promise<Array<{
+    userId: string;
+    userName: string;
+    userEmail: string;
+    date: string;
+    weekday: string;
+  }>> {
+    const absences: Array<{
+      userId: string;
+      userName: string;
+      userEmail: string;
+      date: string;
+      weekday: string;
+    }> = [];
+
+    // Get all users
+    const User = (await import('./User')).default;
+    const users = await User.find({}) as import('./User').IUser[];
+
+    // Get all attendance logs for the period
+    const models = getAttendanceModelsForRange(startDate, endDate);
+    const allAttendanceLogs: IAttendanceLog[] = [];
+
+    for (const { model } of models) {
+      const logs = await model.find({
+        timestamp: {
+          $gte: startDate,
+          $lte: endDate,
+        }
+      });
+      allAttendanceLogs.push(...logs);
+    }
+
+    // Group attendance by user and date
+    const userAttendanceByDate: { [key: string]: Set<string> } = {};
+
+    for (const log of allAttendanceLogs) {
+      const dateKey = log.timestamp.toISOString().split('T')[0]; // YYYY-MM-DD
+      const userKey = log.userId.toString();
+
+      if (!userAttendanceByDate[userKey]) {
+        userAttendanceByDate[userKey] = new Set();
+      }
+
+      userAttendanceByDate[userKey].add(dateKey);
+    }
+
+    // Check each day in the range for absences
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+      // Skip weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+
+        // Check each user for absence on this date
+        for (const user of users) {
+          const userId = (user._id as any).toString();
+          const userAttendance = userAttendanceByDate[userId] || new Set();
+
+          if (!userAttendance.has(dateStr)) {
+            absences.push({
+              userId,
+              userName: user.name,
+              userEmail: user.email,
+              date: dateStr,
+              weekday: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]
+            });
+          }
+        }
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return absences.sort((a, b) => b.date.localeCompare(a.date));
   }
 }
 

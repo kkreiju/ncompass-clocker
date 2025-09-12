@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Users,
   Calculator,
+  FileText,
   GalleryVerticalEnd,
   AudioWaveform,
   Command,
@@ -45,6 +46,11 @@ const data = {
       title: "Attendance",
       url: "/admin/attendance",
       icon: ClipboardCheck,
+    },
+    {
+      title: "Reports",
+      url: "/admin/reports",
+      icon: FileText,
     },
     {
       title: "Users",
