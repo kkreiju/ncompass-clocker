@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UserTable } from "./user-table";
 import { AddUserModal } from "./add-user-modal";
 import { EditUserModal } from "./edit-user-modal";
+import { DeleteUserModal } from "./delete-user-modal";
 import { QRCodeModal } from "./qr-code-modal";
 import { useUsers } from "../../hooks/use-users";
 import { UserPlus } from "lucide-react";
@@ -21,8 +22,10 @@ export function UserManagement() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [qrUserName, setQrUserName] = useState<string>('');
 
   const handleEdit = (user: User) => {
@@ -31,13 +34,16 @@ export function UserManagement() {
     clearError();
   };
 
-  const handleDelete = async (userId: string, userName: string) => {
-    if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDelete = (user: User) => {
+    setDeletingUser(user);
+    setShowDeleteModal(true);
+    clearError();
+  };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
     try {
       await deleteUser(userId);
+      setDeletingUser(null);
     } catch (error) {
       // Error is handled by the hook
     }
@@ -61,12 +67,12 @@ export function UserManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">Manage your organization's users and access</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">User Management</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Manage your organization's users and access</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)} className="gap-2">
+        <Button onClick={() => setShowAddModal(true)} className="gap-2 w-full sm:w-auto">
           <UserPlus className="h-4 w-4" />
           Add New User
         </Button>
@@ -102,6 +108,19 @@ export function UserManagement() {
           clearError();
         }}
         onEditUser={handleEditUser}
+        loading={loading}
+        error={error}
+      />
+
+      <DeleteUserModal
+        isOpen={showDeleteModal}
+        user={deletingUser}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeletingUser(null);
+          clearError();
+        }}
+        onDeleteUser={handleDeleteUser}
         loading={loading}
         error={error}
       />

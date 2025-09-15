@@ -21,7 +21,7 @@ import {
 
 type Item = {
   title: string
-  url: string
+  url?: string
   icon?: LucideIcon
   isActive?: boolean
   items?: { title: string; url: string }[]
@@ -35,7 +35,7 @@ export function NavMain({ items }: { items: Item[] }) {
         {items.map((item) => {
           const hasChildren = !!item.items?.length
 
-          if (!hasChildren) {
+          if (!hasChildren && item.url) {
             // leaf link
             return (
               <SidebarMenuItem key={item.title}>

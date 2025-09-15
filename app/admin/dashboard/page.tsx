@@ -93,7 +93,7 @@ export default function AdminDashboard() {
       title: 'Manage Users',
       description: 'Add, edit, or remove users',
       icon: UsersIcon,
-      action: () => router.push('/admin/people'),
+      action: () => router.push('/admin/users'),
       color: 'bg-gradient-to-br from-violet-500 to-purple-600'
     },
     {

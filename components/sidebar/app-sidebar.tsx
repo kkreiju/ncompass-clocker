@@ -12,6 +12,9 @@ import {
   GalleryVerticalEnd,
   AudioWaveform,
   Command,
+  Settings,
+  UserCheck,
+  UsersRound,
 } from "lucide-react"
 
 import { NavMain } from "@/components/sidebar/nav-main"
@@ -29,7 +32,20 @@ import {
 } from "@/components/ui/sidebar"
 
 // ----- ATTENDANCE APP DATA -----
-const data = {
+const data: {
+  user: {
+    name: string
+    email: string
+    avatar: string
+  }
+  navMain: {
+    title: string
+    url?: string
+    icon?: any
+    isActive?: boolean
+    items?: { title: string; url: string }[]
+  }[]
+} = {
   user: {
     name: "N-Compass Admin",
     email: "team@n-compass.biz",
@@ -53,9 +69,22 @@ const data = {
       icon: FileText,
     },
     {
-      title: "Users",
-      url: "/admin/people",
-      icon: Users,
+      title: "System",
+      icon: Settings,
+      items: [
+        {
+          title: "Users",
+          url: "/admin/users",
+        },
+        {
+          title: "Role",
+          url: "/admin/role",
+        },
+        {
+          title: "Teams",
+          url: "/admin/teams",
+        },
+      ],
     },
     {
       title: "Rate Calculator",

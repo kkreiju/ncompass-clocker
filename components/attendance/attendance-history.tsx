@@ -38,7 +38,6 @@ export function AttendanceHistory() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUser, setSelectedUser] = useState<string>('all');
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month'>('week');
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedUserForHistory, setSelectedUserForHistory] = useState<User | null>(null);
@@ -153,8 +152,6 @@ export function AttendanceHistory() {
         todayHours
       };
     }).filter(stats =>
-      selectedUser === 'all' || stats.user._id === selectedUser
-    ).filter(stats =>
       stats.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stats.user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -207,12 +204,12 @@ export function AttendanceHistory() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">User Attendance</h1>
-          <p className="text-muted-foreground">Monitor user attendance and activity</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">User Attendance</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Monitor user attendance and activity</p>
         </div>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2 w-full sm:w-auto">
           <Download className="h-4 w-4" />
           Export Report
         </Button>
@@ -222,11 +219,8 @@ export function AttendanceHistory() {
       <AttendanceFilters
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
-        selectedUser={selectedUser}
-        onSelectedUserChange={setSelectedUser}
         selectedPeriod={selectedPeriod}
         onSelectedPeriodChange={setSelectedPeriod}
-        users={users}
       />
 
       {/* User Attendance Table */}
