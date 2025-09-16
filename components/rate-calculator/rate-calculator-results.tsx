@@ -107,7 +107,7 @@ export function RateCalculatorResults({
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b">
             <span className="text-sm font-medium">Working Days</span>
-            <Badge variant="secondary">{calculation.workingDays} days</Badge>
+            <Badge variant="secondary">{calculation.workingDays} day{calculation.workingDays !== 1 ? 's' : ''}</Badge>
           </div>
 
           <div className="flex justify-between items-center py-2 border-b">

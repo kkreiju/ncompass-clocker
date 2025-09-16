@@ -30,7 +30,7 @@ interface UserStatus {
   user: User;
   status: 'present' | 'absent';
   totalTime: number; // in minutes
-  isCurrentlyLoggedIn: boolean;
+  isCurrentlyClockedIn: boolean;
   lastClockIn?: Date;
   formattedTime: string;
   workplace?: 'office' | 'home';
@@ -109,7 +109,7 @@ export function PresentReport() {
       );
     }
 
-    if (status.isCurrentlyLoggedIn) {
+    if (status.isCurrentlyClockedIn) {
       return (
         <Badge className="bg-green-100 text-green-800 border-green-200">
           <Clock className="w-3 h-3 mr-1" />
@@ -128,7 +128,7 @@ export function PresentReport() {
 
   const presentCount = userStatuses.filter(status => status.status === 'present').length;
   const absentCount = userStatuses.filter(status => status.status === 'absent').length;
-  const loggedInCount = userStatuses.filter(status => status.isCurrentlyLoggedIn).length;
+  const clockedInCount = userStatuses.filter(status => status.isCurrentlyClockedIn).length;
 
   return (
     <div className="space-y-6">
@@ -156,11 +156,11 @@ export function PresentReport() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Currently Logged In</CardTitle>
+            <CardTitle className="text-sm font-medium">Currently Clocked In</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loggedInCount}</div>
+            <div className="text-2xl font-bold">{clockedInCount}</div>
           </CardContent>
         </Card>
 
@@ -256,7 +256,7 @@ export function PresentReport() {
                     <TableCell>
                       {status.status === 'present' ? (
                         <div className="font-medium">
-                          {status.isCurrentlyLoggedIn ? (
+                          {status.isCurrentlyClockedIn ? (
                             <span className="text-green-600">{status.formattedTime}</span>
                           ) : (
                             status.formattedTime

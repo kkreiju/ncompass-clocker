@@ -156,9 +156,6 @@ export function RateCalculatorEmployeeSelector({
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-sm sm:text-base truncate">{user.name}</h4>
                                 <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">{user.email}</p>
-                                <p className="text-xs text-muted-foreground/70 mt-0.5">
-                                  ID: {user._id.slice(-8).toUpperCase()}
-                                </p>
                               </div>
                               {selectedUser === user._id && (
                                 <div className="flex items-center gap-1 text-xs text-primary font-medium flex-shrink-0">

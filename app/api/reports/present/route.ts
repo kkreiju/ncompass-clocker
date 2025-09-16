@@ -13,7 +13,7 @@ interface UserStatus {
   user: User;
   status: 'present' | 'absent';
   totalTime: number; // in minutes
-  isCurrentlyLoggedIn: boolean;
+  isCurrentlyClockedIn: boolean;
   lastClockIn?: Date;
   formattedTime: string;
   workplace?: 'office' | 'home';
@@ -112,14 +112,14 @@ async function getDailyAttendanceStatus(selectedDate: Date): Promise<UserStatus[
         },
         status: 'absent',
         totalTime: 0,
-        isCurrentlyLoggedIn: false,
+        isCurrentlyClockedIn: false,
         formattedTime: '0m',
         // No workplace for absent users
       });
     } else {
       // Calculate total time and current status
       let totalTime = 0;
-      let isCurrentlyLoggedIn = false;
+      let isCurrentlyClockedIn = false;
       let lastClockIn: Date | undefined;
 
       // Sort records by timestamp
@@ -145,7 +145,7 @@ async function getDailyAttendanceStatus(selectedDate: Date): Promise<UserStatus[
         const now = new Date();
         const additionalTime = Math.floor((now.getTime() - currentClockIn.getTime()) / (1000 * 60));
         totalTime += additionalTime;
-        isCurrentlyLoggedIn = true;
+        isCurrentlyClockedIn = true;
       }
 
       // Format the total time
@@ -172,7 +172,7 @@ async function getDailyAttendanceStatus(selectedDate: Date): Promise<UserStatus[
         },
         status: 'present',
         totalTime,
-        isCurrentlyLoggedIn,
+        isCurrentlyClockedIn,
         lastClockIn,
         formattedTime,
         workplace,

@@ -77,10 +77,6 @@ const data: {
           url: "/admin/users",
         },
         {
-          title: "Role",
-          url: "/admin/role",
-        },
-        {
           title: "Teams",
           url: "/admin/teams",
         },

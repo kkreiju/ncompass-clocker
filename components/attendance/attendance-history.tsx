@@ -88,13 +88,22 @@ export function AttendanceHistory() {
           startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           break;
         case 'week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          // Start of current week (Sunday)
+          startDate = new Date(now);
+          const dayOfWeek = now.getDay();
+          startDate.setDate(now.getDate() - dayOfWeek);
+          startDate.setHours(0, 0, 0, 0);
           break;
         case 'month':
           startDate = new Date(now.getFullYear(), now.getMonth(), 1);
           break;
         default:
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          // Start of current week (Sunday)
+          startDate = new Date(now);
+          const defaultDayOfWeek = now.getDay();
+          startDate.setDate(now.getDate() - defaultDayOfWeek);
+          startDate.setHours(0, 0, 0, 0);
+          break;
       }
 
       const month = startDate.getMonth() + 1;
@@ -121,7 +130,12 @@ export function AttendanceHistory() {
   const calculateUserStats = (): UserAttendanceStats[] => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Calculate start of current week (Sunday)
+    const startOfWeek = new Date(now);
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
 
     return users.map(user => {
       const userRecords = attendance.filter(record => record.userEmail === user.email);
@@ -129,13 +143,60 @@ export function AttendanceHistory() {
         new Date(record.timestamp).toDateString() === today.toDateString()
       );
       const weekRecords = userRecords.filter(record =>
-        new Date(record.timestamp) >= weekAgo
+        new Date(record.timestamp) >= startOfWeek
       );
 
-      // Calculate hours (simplified - assuming 8 hours per day)
-      const todayHours = (todayRecords.filter(r => r.action === 'clock-in').length +
-                         todayRecords.filter(r => r.action === 'clock-out').length) * 4;
-      const weeklyHours = weekRecords.length * 4; // Simplified calculation
+      // Calculate actual worked hours based on clock-in/out pairs (following rate calculator logic)
+      const calculateHours = (records: AttendanceRecord[]): number => {
+        if (records.length === 0) return 0;
+
+        console.log(`🔍 Calculating hours for ${user.email} with ${records.length} records:`, records);
+
+        // Group records by date (YYYY-MM-DD)
+        const dateGroups: { [key: string]: AttendanceRecord[] } = {};
+        records.forEach(record => {
+          const dateKey = new Date(record.timestamp).toISOString().split('T')[0];
+          if (!dateGroups[dateKey]) {
+            dateGroups[dateKey] = [];
+          }
+          dateGroups[dateKey].push(record);
+        });
+
+        let totalHours = 0;
+
+        // Calculate hours for each day
+        Object.values(dateGroups).forEach(dayRecords => {
+          const sortedRecords = dayRecords.sort((a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          );
+
+          let dayHours = 0;
+          let clockInTime: Date | null = null;
+
+          sortedRecords.forEach(record => {
+            if (record.action === 'clock-in') {
+              clockInTime = new Date(record.timestamp);
+            } else if (record.action === 'clock-out' && clockInTime) {
+              const clockOutTime = new Date(record.timestamp);
+              const sessionHours = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+              dayHours += sessionHours;
+              clockInTime = null;
+            }
+          });
+
+          if (dayHours > 0) {
+            totalHours += dayHours;
+          }
+        });
+
+        // Round to one decimal place
+        const finalHours = Math.round(totalHours * 10) / 10;
+        console.log(`✅ Final hours for ${user.email}: ${finalHours}h (from ${Object.keys(dateGroups).length} days)`);
+        return finalHours;
+      };
+      
+      const todayHours = calculateHours(todayRecords);
+      const weeklyHours = calculateHours(weekRecords);
 
       // Get last activity
       const lastRecord = userRecords.sort((a, b) =>

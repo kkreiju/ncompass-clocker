@@ -32,11 +32,9 @@ export function AbsencesReport() {
     const today = new Date();
     const monday = new Date(today);
     monday.setDate(today.getDate() - today.getDay() + 1); // Monday of current week
-    const friday = new Date(monday);
-    friday.setDate(monday.getDate() + 4); // Friday of current week
 
     setStartDate(monday);
-    setEndDate(friday);
+    setEndDate(today);
   }, []);
 
   // Validate date ranges
