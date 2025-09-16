@@ -59,20 +59,26 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
         (result) => {
           // Handle both string and ScanResult types
           const qrData = typeof result === 'string' ? result : result.data;
+          console.log('QR Scanner detected:', qrData);
           handleScanResult(qrData);
         },
         {
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
-          maxScansPerSecond: 50, // Increased scan frequency for faster detection
-          preferredCamera: 'environment', // Use back camera on mobile for better performance
+          highlightScanRegion: false,  // Remove yellow scan region highlight
+          highlightCodeOutline: false, // Remove yellow QR code outline
+          maxScansPerSecond: 25,
+          preferredCamera: 'environment',
           calculateScanRegion: (video) => ({
-            // Optimize scan region for better performance and speed
-            x: 0.1 * video.videoWidth,
-            y: 0.1 * video.videoHeight,
-            width: 0.8 * video.videoWidth,
-            height: 0.8 * video.videoHeight,
+            // Center the scan region and make it more focused
+            x: 0.2 * video.videoWidth,
+            y: 0.2 * video.videoHeight,
+            width: 0.6 * video.videoWidth,
+            height: 0.6 * video.videoHeight,
           }),
+          // Improve visual feedback
+          onDecodeError: (error) => {
+            // Silently handle decode errors to prevent noise
+            console.debug('QR decode error (normal):', error);
+          },
         }
       );
 
@@ -107,17 +113,19 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
   const handleScanResult = async (qrCode: string) => {
     const currentTime = Date.now();
 
-    // Debounce: prevent scanning the same code within 3 seconds
-    if ((qrCode === lastScannedCode && currentTime - lastScanTime < 3000) ||
-        qrCode === lastProcessedCodeRef.current) {
+    // Debounce: prevent scanning the same code within 2 seconds (reduced from 3)
+    if (qrCode === lastScannedCode && currentTime - lastScanTime < 2000) {
       return;
     }
 
     // Prevent multiple simultaneous scans and API calls
-    if (loading || processingRef.current) return;
+    if (loading || processingRef.current) {
+      console.log('Scan blocked: loading or processing in progress');
+      return;
+    }
 
     processingRef.current = true;
-    lastProcessedCodeRef.current = qrCode;
+    console.log('Processing QR code:', qrCode);
 
     setLastScannedCode(qrCode);
     setLastScanTime(currentTime);
@@ -139,33 +147,57 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
       });
 
       const data = await response.json();
-      const scanResult: ScanResult = {
-        qrCode,
-        timestamp: currentTime,
-        success: response.ok,
-        message: data.message || data.error,
-        action: data.attendance?.action
-      };
 
       if (response.ok) {
+        const scanResult: ScanResult = {
+          qrCode,
+          timestamp: currentTime,
+          success: true,
+          message: data.message,
+          action: data.attendance?.action
+        };
+
         setMessage(data.message);
         setMessageType('success');
         setScanHistory(prev => [scanResult, ...prev.slice(0, 9)]); // Keep last 10 scans
       } else {
-        setMessage(data.error || 'Failed to process attendance');
-        setMessageType('error');
-        setScanHistory(prev => [scanResult, ...prev.slice(0, 9)]);
+        // Handle different error types without adding to failed scan history
+        let scanResult: ScanResult | undefined;
+
+        if (response.status === 404 && data.error?.includes('User not found')) {
+          // User not found - show friendly message but don't log as failed scan
+          scanResult = {
+            qrCode,
+            timestamp: currentTime,
+            success: false,
+            message: 'User not recognized. Please check with your administrator.'
+          };
+          setMessage('User not recognized. Please check with your administrator.');
+          setMessageType('warning');
+        } else {
+          // Other errors - show error and log as failed scan
+          scanResult = {
+            qrCode,
+            timestamp: currentTime,
+            success: false,
+            message: data.error || 'Failed to process attendance'
+          };
+
+          setMessage(data.error || 'Failed to process attendance');
+          setMessageType('error');
+          setScanHistory(prev => [scanResult!, ...prev.slice(0, 9)]); // scanResult is guaranteed to be defined here
+        }
+
+        // Notify parent component
+        onScanResult?.(scanResult);
       }
 
-      // Notify parent component
-      onScanResult?.(scanResult);
-
-      // Show result for 3 seconds, then restart scanning
+      // Show result for 2 seconds, then restart scanning
       setTimeout(() => {
         setMessage('');
         setResult('');
         startScanning();
-      }, 3000);
+      }, 2000);
     } catch (error) {
       const scanResult: ScanResult = {
         qrCode,
@@ -181,10 +213,17 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
       // Notify parent component
       onScanResult?.(scanResult);
 
-      // Do not auto-restart scanning on error - let user manually restart
+      // Auto-restart scanning after 3 seconds on error
+      setTimeout(() => {
+        startScanning();
+      }, 3000);
     } finally {
       setLoading(false);
       processingRef.current = false;
+      // Clear the last processed code after a short delay to allow rescanning
+      setTimeout(() => {
+        lastProcessedCodeRef.current = '';
+      }, 1000);
     }
   };
 

@@ -20,7 +20,7 @@ export const ScannerVideo = forwardRef<HTMLVideoElement, ScannerVideoProps>(
           muted
           autoPlay
           style={{
-            filter: 'contrast(1.1) brightness(1.1)', // Enhance contrast for better QR detection
+            filter: 'contrast(1.2) brightness(1.1) saturate(1.1)', // Enhanced contrast for better QR detection
           }}
         />
 
