@@ -244,8 +244,12 @@ export function AttendanceHistory() {
       .slice(0, 2);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+  const formatDate = (dateString: string | Date) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    return date.toLocaleString();
   };
 
   const handleViewHistory = (user: User) => {

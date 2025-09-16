@@ -14,11 +14,12 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
   createdAt: string;
 }
 
 export function UserManagement() {
-  const { users, loading, error, addUser, updateUser, deleteUser, clearError } = useUsers();
+  const { users, loading, error, addUser, updateUser, updateUserLocally, deleteUser, clearError } = useUsers();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -53,6 +54,11 @@ export function UserManagement() {
     console.log('Opening QR modal for user:', userName);
     setQrUserName(userName);
     setShowQRModal(true);
+  };
+
+  const handleProfileUpdate = (updatedUser: User) => {
+    // Update the user in the local state to trigger re-render with new profile picture
+    updateUserLocally(updatedUser);
   };
 
   const handleAddUser = async (userData: { name: string; email: string; password: string }) => {
@@ -108,6 +114,7 @@ export function UserManagement() {
           clearError();
         }}
         onEditUser={handleEditUser}
+        onProfileUpdate={handleProfileUpdate}
         loading={loading}
         error={error}
       />

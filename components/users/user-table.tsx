@@ -21,7 +21,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  avatar?: string;
+  profileURL?: string;
   createdAt: string;
 }
 
@@ -48,41 +48,21 @@ export function UserTable({ users, loading, onEdit, onDelete, onShowQR }: UserTa
   };
 
   const getAvatarPath = (user: User) => {
-    // Check if user has an avatar field
-    if (user.avatar) {
-      return user.avatar;
-    }
-
-    // Map user names to profile pictures
-    const nameLower = user.name.toLowerCase();
-    if (nameLower.includes('saguisa')) {
-      return '/user-profile/saguisa.png';
-    }
-    if (nameLower.includes('albores')) {
-      return '/user-profile/albores.png';
-    }
-    if (nameLower.includes('bernabe')) {
-      return '/user-profile/bernabe.png';
-    }
-    if (nameLower.includes('busal')) {
-      return '/user-profile/busal.png';
-    }
-    if (nameLower.includes('claro')) {
-      return '/user-profile/claro.png';
-    }
-    if (nameLower.includes('mendez')) {
-      return '/user-profile/mendez.png';
-    }
-    if (nameLower.includes('rubica')) {
-      return '/user-profile/rubica.png';
+    // Check if user has a profileURL field
+    if (user.profileURL && user.profileURL.trim() !== '') {
+      return user.profileURL;
     }
 
     // Default to no avatar (will show initials)
-    return '';
+    return undefined;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+  const formatDate = (dateString: string | Date) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    return date.toLocaleString();
   };
 
   // Filter users based on search term
@@ -192,9 +172,6 @@ export function UserTable({ users, loading, onEdit, onDelete, onShowQR }: UserTa
                         {user.name}
                       </button>
                       <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Joined {formatDate(user.createdAt)}
-                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

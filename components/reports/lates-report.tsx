@@ -96,8 +96,12 @@ export function LatesReport() {
     });
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString([], {
+  const formatDate = (dateStr: string | Date) => {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    return date.toLocaleDateString([], {
       month: 'short',
       day: 'numeric',
       year: 'numeric'

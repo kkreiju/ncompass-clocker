@@ -17,6 +17,14 @@ import {
   RefreshCw
 } from "lucide-react"
 
+interface User {
+  _id: string
+  name: string
+  email: string
+  profileURL?: string
+  createdAt: string
+}
+
 interface AttendanceRecord {
   _id: string
   userName: string
@@ -27,10 +35,11 @@ interface AttendanceRecord {
 
 interface RecentActivityProps {
   attendance: AttendanceRecord[]
+  users: User[]
   loading: boolean
 }
 
-export function RecentActivity({ attendance, loading }: RecentActivityProps) {
+export function RecentActivity({ attendance, users, loading }: RecentActivityProps) {
   const [refreshing, setRefreshing] = useState(false)
 
   const getActionIcon = (action: string) => {
@@ -52,33 +61,15 @@ export function RecentActivity({ attendance, loading }: RecentActivityProps) {
       .slice(0, 2)
   }
 
-  const getAvatarPath = (userName: string) => {
-    // Map user names to profile pictures
-    const nameLower = userName.toLowerCase();
-    if (nameLower.includes('saguisa')) {
-      return '/user-profile/saguisa.png';
-    }
-    if (nameLower.includes('albores')) {
-      return '/user-profile/albores.png';
-    }
-    if (nameLower.includes('bernabe')) {
-      return '/user-profile/bernabe.png';
-    }
-    if (nameLower.includes('busal')) {
-      return '/user-profile/busal.png';
-    }
-    if (nameLower.includes('claro')) {
-      return '/user-profile/claro.png';
-    }
-    if (nameLower.includes('mendez')) {
-      return '/user-profile/mendez.png';
-    }
-    if (nameLower.includes('rubica')) {
-      return '/user-profile/rubica.png';
+  const getAvatarPath = (userEmail: string) => {
+    // Find user by email to get profile URL
+    const user = users.find(u => u.email === userEmail);
+    if (user && user.profileURL && user.profileURL.trim() !== '') {
+      return user.profileURL;
     }
 
     // Default to no avatar (will show initials)
-    return '';
+    return undefined;
   };
 
   const formatTime = (timestamp: string) => {
@@ -177,7 +168,7 @@ export function RecentActivity({ attendance, loading }: RecentActivityProps) {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8 border border-background">
-                            <AvatarImage src={getAvatarPath(record.userName)} alt={record.userName} />
+                            <AvatarImage src={getAvatarPath(record.userEmail)} alt={record.userName} />
                             <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                               {getInitials(record.userName)}
                             </AvatarFallback>

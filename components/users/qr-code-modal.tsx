@@ -68,7 +68,6 @@ function QRCodeWithLogo({ value, size = 256 }: { value: string | undefined; size
 }
 
 export function QRCodeModal({ isOpen, userName, onClose }: QRCodeModalProps) {
-  console.log('QR Modal rendered:', { isOpen, userName });
   const handleDownload = () => {
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (!canvas) return;

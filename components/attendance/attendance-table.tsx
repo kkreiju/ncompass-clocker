@@ -19,7 +19,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  avatar?: string;
+  profileURL?: string;
   createdAt: string;
 }
 
@@ -59,37 +59,13 @@ export function AttendanceTable({
   };
 
   const getAvatarPath = (user: User) => {
-    // Check if user has an avatar field
-    if (user.avatar) {
-      return user.avatar;
-    }
-
-    // Map user names to profile pictures
-    const nameLower = user.name.toLowerCase();
-    if (nameLower.includes('saguisa')) {
-      return '/user-profile/saguisa.png';
-    }
-    if (nameLower.includes('albores')) {
-      return '/user-profile/albores.png';
-    }
-    if (nameLower.includes('bernabe')) {
-      return '/user-profile/bernabe.png';
-    }
-    if (nameLower.includes('busal')) {
-      return '/user-profile/busal.png';
-    }
-    if (nameLower.includes('claro')) {
-      return '/user-profile/claro.png';
-    }
-    if (nameLower.includes('mendez')) {
-      return '/user-profile/mendez.png';
-    }
-    if (nameLower.includes('rubica')) {
-      return '/user-profile/rubica.png';
+    // Check if user has a profileURL field
+    if (user.profileURL && user.profileURL.trim() !== '') {
+      return user.profileURL;
     }
 
     // Default to no avatar (will show initials)
-    return '';
+    return undefined;
   };
 
   // Calculate pagination

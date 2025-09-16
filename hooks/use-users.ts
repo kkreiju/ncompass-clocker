@@ -6,6 +6,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
   createdAt: string;
 }
 
@@ -149,6 +150,12 @@ export function useUsers() {
     fetchUsers();
   }, []);
 
+  const updateUserLocally = (updatedUser: User) => {
+    setUsers(prev => prev.map(user =>
+      user._id === updatedUser._id ? updatedUser : user
+    ));
+  };
+
   return {
     users,
     loading,
@@ -156,6 +163,7 @@ export function useUsers() {
     fetchUsers,
     addUser,
     updateUser,
+    updateUserLocally,
     deleteUser,
     clearError: () => setError(''),
   };

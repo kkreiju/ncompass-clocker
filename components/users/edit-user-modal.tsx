@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Edit, AlertCircle } from "lucide-react";
+import { ProfilePictureUploadInline } from "./profile-picture-upload";
 
 interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
   createdAt: string;
 }
 
@@ -20,11 +22,12 @@ interface EditUserModalProps {
   user: User | null;
   onClose: () => void;
   onEditUser: (userId: string, userData: { name: string; email: string; password?: string }) => Promise<void>;
+  onProfileUpdate: (user: User) => void;
   loading?: boolean;
   error?: string;
 }
 
-export function EditUserModal({ isOpen, user, onClose, onEditUser, loading, error }: EditUserModalProps) {
+export function EditUserModal({ isOpen, user, onClose, onEditUser, onProfileUpdate, loading, error }: EditUserModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -110,6 +113,19 @@ export function EditUserModal({ isOpen, user, onClose, onEditUser, loading, erro
               placeholder="Leave blank to keep current password"
             />
           </div>
+
+          {/* Profile Picture Upload */}
+          {user && (
+            <div className="space-y-2">
+              <Label>Profile Picture</Label>
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <ProfilePictureUploadInline
+                  user={user}
+                  onProfileUpdate={onProfileUpdate}
+                />
+              </div>
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive">

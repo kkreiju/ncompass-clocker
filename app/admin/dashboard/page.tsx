@@ -17,6 +17,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
   createdAt: string;
 }
 
@@ -133,7 +134,7 @@ export default function AdminDashboard() {
 
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <QuickActions actions={quickActions} />
-        <RecentActivity attendance={attendance} loading={loading} />
+        <RecentActivity attendance={attendance} users={users} loading={loading} />
       </div>
     </>
   )
