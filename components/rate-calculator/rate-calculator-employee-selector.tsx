@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Check, ChevronsUpDown, Search } from "lucide-react";
 
 interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
   createdAt: string;
 }
 
@@ -34,14 +36,32 @@ export function RateCalculatorEmployeeSelector({
     [users, selectedUser]
   );
 
-  // Filter users based on search query
+  // Filter and sort users based on search query
   const filteredUsers = useMemo(() =>
-    users.filter(user =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
+    users
+      .filter(user =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())),
     [users, searchQuery]
   );
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getAvatarPath = (user: User) => {
+    if (user.profileURL && user.profileURL.trim() !== '') {
+      return user.profileURL;
+    }
+    return undefined;
+  };
 
   return (
     <div className="space-y-3">
@@ -62,9 +82,12 @@ export function RateCalculatorEmployeeSelector({
           >
             {selectedUserData ? (
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="h-4 w-4 text-primary" />
-                </div>
+                <Avatar className="w-8 h-8 border border-background flex-shrink-0">
+                  <AvatarImage src={getAvatarPath(selectedUserData)} alt={selectedUserData.name} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                    {getInitials(selectedUserData.name)}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium text-sm sm:text-base">
                     {selectedUserData.name}
@@ -144,13 +167,14 @@ export function RateCalculatorEmployeeSelector({
                             setSearchQuery("");
                           }}
                         >
-                          <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ${
-                            selectedUser === user._id ? 'bg-primary/20' : 'bg-primary/10'
+                          <Avatar className={`w-10 h-10 sm:w-12 sm:h-12 border-2 flex-shrink-0 ${
+                            selectedUser === user._id ? 'border-primary' : 'border-border'
                           }`}>
-                            <User className={`h-5 w-5 sm:h-6 sm:w-6 ${
-                              selectedUser === user._id ? 'text-primary' : 'text-primary/70'
-                            }`} />
-                          </div>
+                            <AvatarImage src={getAvatarPath(user)} alt={user.name} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                              {getInitials(user.name)}
+                            </AvatarFallback>
+                          </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start sm:items-center gap-2">
                               <div className="flex-1 min-w-0">

@@ -7,6 +7,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
 }
 
 interface UserStatus {
@@ -109,6 +110,7 @@ async function getDailyAttendanceStatus(selectedDate: Date): Promise<UserStatus[
           _id: (user._id as any).toString(),
           name: user.name,
           email: user.email,
+          profileURL: user.profileURL,
         },
         status: 'absent',
         totalTime: 0,
@@ -169,6 +171,7 @@ async function getDailyAttendanceStatus(selectedDate: Date): Promise<UserStatus[
           _id: (user._id as any).toString(),
           name: user.name,
           email: user.email,
+          profileURL: user.profileURL,
         },
         status: 'present',
         totalTime,

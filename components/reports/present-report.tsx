@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarIcon, Clock, UserCheck, UserX } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  profileURL?: string;
 }
 
 interface AttendanceRecord {
@@ -77,7 +79,11 @@ export function PresentReport() {
 
       const data = await response.json();
       if (data.success) {
-        setUserStatuses(data.userStatuses);
+        // Sort user statuses alphabetically by name
+        const sortedStatuses = data.userStatuses.sort((a: any, b: any) =>
+          a.user.name.toLowerCase().localeCompare(b.user.name.toLowerCase())
+        );
+        setUserStatuses(sortedStatuses);
       }
     } catch (error) {
       console.error('Error fetching present data:', error);
@@ -124,6 +130,22 @@ export function PresentReport() {
         Present
       </Badge>
     );
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getAvatarPath = (user: User) => {
+    if (user.profileURL && user.profileURL.trim() !== '') {
+      return user.profileURL;
+    }
+    return undefined;
   };
 
   const presentCount = userStatuses.filter(status => status.status === 'present').length;
@@ -244,9 +266,17 @@ export function PresentReport() {
                 {userStatuses.map((status) => (
                   <TableRow key={status.user._id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{status.user.name}</div>
-                        <div className="text-sm text-muted-foreground">{status.user.email}</div>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 border border-background">
+                          <AvatarImage src={getAvatarPath(status.user)} alt={status.user.name} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                            {getInitials(status.user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{status.user.name}</div>
+                          <div className="text-sm text-muted-foreground">{status.user.email}</div>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

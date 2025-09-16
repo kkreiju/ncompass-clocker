@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { UserTable } from "./user-table";
 import { AddUserModal } from "./add-user-modal";
@@ -64,6 +64,12 @@ export function UserManagement() {
     // Note: Profile updates happen instantly via API, so no additional loading needed here
   };
 
+  // Sort users alphabetically by name
+  const sortedUsers = useMemo(() =>
+    [...users].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())),
+    [users]
+  );
+
   const handleAddUser = async (userData: { name: string; email: string; password: string }) => {
     setAddingUser(true);
     try {
@@ -99,7 +105,7 @@ export function UserManagement() {
 
       {/* User Table */}
       <UserTable
-        users={users}
+        users={sortedUsers}
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDelete}

@@ -73,11 +73,13 @@ export function LatesReport() {
 
       const data = await response.json();
       if (data.success) {
-        // Convert clockInTime strings back to Date objects
-        const processedData = data.lateEntries.map((entry: any) => ({
-          ...entry,
-          clockInTime: new Date(entry.clockInTime)
-        }));
+        // Convert clockInTime strings back to Date objects and sort alphabetically by user name
+        const processedData = data.lateEntries
+          .map((entry: any) => ({
+            ...entry,
+            clockInTime: new Date(entry.clockInTime)
+          }))
+          .sort((a: any, b: any) => a.userName.toLowerCase().localeCompare(b.userName.toLowerCase()));
         setLateEntries(processedData);
       }
     } catch (error) {

@@ -136,7 +136,9 @@ export function AttendanceHistory() {
     startOfWeek.setDate(now.getDate() - dayOfWeek);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    return users.map(user => {
+    return users
+      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+      .map(user => {
       const userRecords = attendance.filter(record => record.userEmail === user.email);
       const todayRecords = userRecords.filter(record =>
         new Date(record.timestamp).toDateString() === today.toDateString()
