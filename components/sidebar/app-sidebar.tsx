@@ -36,7 +36,7 @@ const data: {
   user: {
     name: string
     email: string
-    avatar: string
+    profileURL?: string
   }
   navMain: {
     title: string
@@ -47,9 +47,9 @@ const data: {
   }[]
 } = {
   user: {
-    name: "N-Compass Admin",
-    email: "team@n-compass.biz",
-    avatar: "/ncompass-logo.svg",
+    name: "User",
+    email: "user@example.com",
+    profileURL: undefined,
   },
   navMain: [
     {

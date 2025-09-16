@@ -47,44 +47,47 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
   const [user, setUser] = useState({
     name: "User",
     email: "user@example.com",
-    avatar: "/user-profile/default.png"
+    profileURL: undefined
   })
 
-  // Helper function to find matching avatar based on name
-  const getMatchingAvatar = (name: string): string => {
-    const availableAvatars = ['albores', 'bernabe', 'busal', 'claro', 'mendez', 'rubica', 'saguisa']
-    const nameLower = name.toLowerCase()
-
-    // Check if the name contains any of the avatar names
-    const matchingAvatar = availableAvatars.find(avatar => nameLower.includes(avatar))
-    return matchingAvatar ? `/user-profile/${matchingAvatar}.png` : "/user-profile/albores.png"
-  }
-
-  // Helper function to decode JWT payload (client-side only)
-  const parseJwt = (token: string): TokenPayload | null => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(atob(base64));
-    } catch (error) {
-      console.error('Error decoding JWT:', error);
-      return null;
-    }
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
-  // Parse JWT token on component mount
+  // Fetch current user data on component mount
   useEffect(() => {
-    const token = localStorage.getItem('userToken')
-    if (token) {
-      const decoded = parseJwt(token)
-      if (decoded) {
-        setUser({
-          name: decoded.name,
-          email: decoded.email,
-          avatar: getMatchingAvatar(decoded.name)
-        })
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem('userToken');
+        if (!token) return;
+
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser({
+              name: data.user.name,
+              email: data.user.email,
+              profileURL: data.user.profileURL,
+            });
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to fetch current user data:', error);
       }
-    }
+    };
+
+    fetchCurrentUser();
   }, [])
 
   const handleLogout = () => {
@@ -125,10 +128,12 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">
-                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarImage src={user.profileURL} alt={user.name} />
+                    {user.profileURL ? null : (
+                      <AvatarFallback className="rounded-lg">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{user.name}</span>
@@ -145,10 +150,12 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="rounded-lg">
-                        {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarImage src={user.profileURL} alt={user.name} />
+                      {user.profileURL ? null : (
+                        <AvatarFallback className="rounded-lg">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-medium">{user.name}</span>

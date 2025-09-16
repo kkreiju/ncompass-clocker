@@ -250,11 +250,9 @@ export function RecentActivity({ attendance, users, loading }: RecentActivityPro
   }
 
   const getAvatarPath = (userEmail: string) => {
-    console.log(`🔍 Looking up avatar for: "${userEmail}"`);
     // Find user by email to get profile URL (case-insensitive)
     const user = users.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
     if (user && user.profileURL && user.profileURL.trim() !== '') {
-      console.log(`✅ Found profile for ${userEmail}: ${user.profileURL}`);
       return user.profileURL;
     }
 

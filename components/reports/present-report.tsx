@@ -238,7 +238,6 @@ export function PresentReport() {
                   <TableHead>Status</TableHead>
                   <TableHead>Total Time</TableHead>
                   <TableHead>Workplace</TableHead>
-                  <TableHead>Last Activity</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -271,18 +270,6 @@ export function PresentReport() {
                         <Badge variant="outline">
                           {status.workplace === 'office' ? 'Office' : 'Home'}
                         </Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {status.lastClockIn ? (
-                        <div className="text-sm">
-                          {new Date(status.lastClockIn).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}

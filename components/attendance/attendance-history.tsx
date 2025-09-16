@@ -28,7 +28,6 @@ interface UserAttendanceStats {
   totalRecords: number;
   thisWeekRecords: number;
   todayRecords: number;
-  lastActivity: string;
   weeklyHours: number;
   todayHours: number;
 }
@@ -208,7 +207,6 @@ export function AttendanceHistory() {
         totalRecords: userRecords.length,
         thisWeekRecords: weekRecords.length,
         todayRecords: todayRecords.length,
-        lastActivity: lastRecord ? new Date(lastRecord.timestamp).toLocaleDateString() : 'Never',
         weeklyHours,
         todayHours
       };

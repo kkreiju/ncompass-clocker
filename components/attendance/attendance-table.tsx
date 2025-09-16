@@ -28,7 +28,6 @@ interface UserAttendanceStats {
   totalRecords: number;
   thisWeekRecords: number;
   todayRecords: number;
-  lastActivity: string;
   weeklyHours: number;
   todayHours: number;
 }
@@ -130,9 +129,6 @@ export function AttendanceTable({
                       {stats.user.name}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{stats.user.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Last activity: {stats.lastActivity}
-                    </p>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
