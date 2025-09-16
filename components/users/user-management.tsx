@@ -28,6 +28,8 @@ export function UserManagement() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [qrUserName, setQrUserName] = useState<string>('');
+  const [updatingUser, setUpdatingUser] = useState(false);
+  const [addingUser, setAddingUser] = useState(false);
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -59,15 +61,26 @@ export function UserManagement() {
   const handleProfileUpdate = (updatedUser: User) => {
     // Update the user in the local state to trigger re-render with new profile picture
     updateUserLocally(updatedUser);
+    // Note: Profile updates happen instantly via API, so no additional loading needed here
   };
 
   const handleAddUser = async (userData: { name: string; email: string; password: string }) => {
-    await addUser(userData);
+    setAddingUser(true);
+    try {
+      await addUser(userData);
+    } finally {
+      setAddingUser(false);
+    }
   };
 
   const handleEditUser = async (userId: string, userData: { name: string; email: string; password?: string }) => {
-    await updateUser(userId, userData);
-    setEditingUser(null);
+    setUpdatingUser(true);
+    try {
+      await updateUser(userId, userData);
+      setEditingUser(null);
+    } finally {
+      setUpdatingUser(false);
+    }
   };
 
   return (
@@ -101,7 +114,7 @@ export function UserManagement() {
           clearError();
         }}
         onAddUser={handleAddUser}
-        loading={loading}
+        loading={addingUser}
         error={error}
       />
 
@@ -115,7 +128,7 @@ export function UserManagement() {
         }}
         onEditUser={handleEditUser}
         onProfileUpdate={handleProfileUpdate}
-        loading={loading}
+        loading={updatingUser}
         error={error}
       />
 

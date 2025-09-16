@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { AttendanceService } from '@/models/AttendanceLog';
 import { AuthService } from '@/lib/auth';
+import User from '@/models/User';
 
 // GET - Fetch attendance records
 export async function GET(request: NextRequest) {
@@ -88,11 +89,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action, workplace, qrCodeId } = body;
 
-    // Log attendance
+    // Get fresh user data from database (not from potentially stale JWT)
+    const currentUser = await User.findById(payload.userId);
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'User not found.' },
+        { status: 404 }
+      );
+    }
+
+    // Log attendance with current user information
     const attendanceLog = await AttendanceService.logAttendance({
       userId: payload.userId,
-      userName: payload.name,
-      userEmail: payload.email,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
       action,
       workplace,
       qrCodeId,

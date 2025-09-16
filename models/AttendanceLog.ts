@@ -222,6 +222,34 @@ export class AttendanceService {
     }).sort({ timestamp: -1 });
   }
 
+  // Update user information in all attendance records across all collections
+  static async updateUserInAttendanceRecords(userId: string, newName: string, newEmail: string): Promise<void> {
+    try {
+      // Get all collection names that might contain attendance data
+      // We'll check the last 2 years to be safe
+      const currentDate = new Date();
+      const twoYearsAgo = new Date(currentDate.getFullYear() - 2, currentDate.getMonth(), 1);
+
+      const models = getAttendanceModelsForRange(twoYearsAgo, currentDate);
+
+      // Update records in each collection
+      for (const { model } of models) {
+        await model.updateMany(
+          { userId: userId },
+          {
+            $set: {
+              userName: newName,
+              userEmail: newEmail
+            }
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error updating attendance records:', error);
+      throw error;
+    }
+  }
+
   // Get user's last attendance action
   static async getLastAttendanceAction(userId: string): Promise<IAttendanceLog | null> {
     // Check current month first

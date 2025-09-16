@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { AuthService } from '@/lib/auth';
+import { AttendanceService } from '@/models/AttendanceLog';
 
 export async function GET(request: NextRequest) {
   try {
@@ -167,12 +168,31 @@ export async function PUT(request: NextRequest) {
       updateData.password = await AuthService.hashPassword(password);
     }
 
+    // Check if name or email changed
+    const nameChanged = name !== existingUser.name;
+    const emailChanged = email.toLowerCase() !== existingUser.email.toLowerCase();
+
     // Update user
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       updateData,
       { new: true }
     ).select('-password');
+
+    // If name or email changed, update all attendance records
+    if (nameChanged || emailChanged) {
+      try {
+        await AttendanceService.updateUserInAttendanceRecords(
+          userId,
+          name,
+          email.toLowerCase()
+        );
+      } catch (attendanceError) {
+        console.error('Error updating attendance records:', attendanceError);
+        // Don't fail the entire request, but log the error
+        // The user update succeeded, but attendance records might be inconsistent
+      }
+    }
 
     return NextResponse.json({
       success: true,
