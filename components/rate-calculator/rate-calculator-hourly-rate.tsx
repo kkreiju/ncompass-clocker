@@ -2,7 +2,6 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DollarSign } from "lucide-react";
 
 interface RateCalculatorHourlyRateProps {
   hourlyRate: string;
@@ -17,12 +16,12 @@ export function RateCalculatorHourlyRate({
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-md">
-          <DollarSign className="h-4 w-4 text-primary" />
+          <span className="text-primary font-semibold text-sm">₱</span>
         </div>
         <Label htmlFor="hourly-rate" className="text-sm font-medium">Hourly Rate (PHP)</Label>
       </div>
       <div className="relative">
-        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground font-semibold">₱</span>
         <Input
           id="hourly-rate"
           type="number"

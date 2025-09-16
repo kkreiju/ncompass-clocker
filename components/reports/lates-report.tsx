@@ -284,7 +284,7 @@ export function LatesReport() {
                       <TableCell>{formatTime(entry.clockInTime)}</TableCell>
                       <TableCell>{formatLateTime(entry.lateMinutes)}</TableCell>
                       <TableCell>
-                        <Badge className={severity.color}>
+                        <Badge className={`${severity.color} w-15 justify-center`}>
                           {severity.label}
                         </Badge>
                       </TableCell>

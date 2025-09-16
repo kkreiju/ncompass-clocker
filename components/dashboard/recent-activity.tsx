@@ -256,13 +256,6 @@ export function RecentActivity({ attendance, users, loading }: RecentActivityPro
       return user.profileURL;
     }
 
-    // Debug: Log when profile is not found
-    if (user) {
-      console.log(`❌ User ${userEmail} found but no profileURL:`, user.profileURL);
-    } else {
-      console.log(`❌ User ${userEmail} not found in users array. Available emails:`, users.map(u => u.email));
-    }
-
     // Default to no avatar (will show initials)
     return undefined;
   };
@@ -378,7 +371,7 @@ export function RecentActivity({ attendance, users, loading }: RecentActivityPro
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-xs px-2 py-0.5 ${getActionColor(record.action)}`}
+                          className={`text-xs px-2 py-0.5 w-16 justify-center ${getActionColor(record.action)}`}
                         >
                           <ActionIcon className="h-3 w-3 mr-1" />
                           {record.action === 'clock-in' ? 'In' : 'Out'}

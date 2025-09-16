@@ -102,7 +102,7 @@ export function PresentReport() {
   const getStatusBadge = (status: UserStatus) => {
     if (status.status === 'absent') {
       return (
-        <Badge variant="destructive">
+        <Badge variant="destructive" className="w-24 justify-center">
           <UserX className="w-3 h-3 mr-1" />
           Absent
         </Badge>
@@ -111,7 +111,7 @@ export function PresentReport() {
 
     if (status.isCurrentlyClockedIn) {
       return (
-        <Badge className="bg-green-100 text-green-800 border-green-200">
+        <Badge className="bg-green-100 text-green-800 border-green-200 w-24 justify-center">
           <Clock className="w-3 h-3 mr-1" />
           Clocked In
         </Badge>
@@ -119,7 +119,7 @@ export function PresentReport() {
     }
 
     return (
-      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+      <Badge className="bg-blue-100 text-blue-800 border-blue-200 w-24 justify-center">
         <UserCheck className="w-3 h-3 mr-1" />
         Present
       </Badge>
