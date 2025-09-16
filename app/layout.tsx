@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 import "./globals.css"
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           storageKey="ncompass-theme"
         >
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

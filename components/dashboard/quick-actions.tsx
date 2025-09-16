@@ -29,7 +29,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {actions.map((action, index) => (
             <Card
               key={index}

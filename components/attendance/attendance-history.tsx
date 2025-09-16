@@ -299,7 +299,6 @@ export function AttendanceHistory() {
         isOpen={historyModalOpen}
         onClose={() => setHistoryModalOpen(false)}
         selectedUser={selectedUserForHistory}
-        attendance={attendance}
       />
     </div>
   );

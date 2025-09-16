@@ -113,7 +113,7 @@ export function PresentReport() {
       return (
         <Badge className="bg-green-100 text-green-800 border-green-200">
           <Clock className="w-3 h-3 mr-1" />
-          Logged In
+          Clocked In
         </Badge>
       );
     }
