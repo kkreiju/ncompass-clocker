@@ -46,3 +46,6 @@ codeql-custom-queries-javascript/
 
 #sarif
 *.sarif
+
+#vscode
+.vscode
