@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { UserManagement } from "@/components/users"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function UsersPage() {
+export default function DepartmentsPage() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -23,7 +23,7 @@ export default function UsersPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Team / Users</BreadcrumbPage>
+                <BreadcrumbPage>Team / Departments</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -31,7 +31,19 @@ export default function UsersPage() {
       </header>
 
       <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-        <UserManagement />
+        <Card>
+          <CardHeader>
+            <CardTitle>Departments Management</CardTitle>
+            <CardDescription>
+              Manage departments and department assignments in the system.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Departments management functionality will be implemented here.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </>
   )

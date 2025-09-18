@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { LogOut, User, LayoutDashboard, ClipboardCheck } from "lucide-react"
+import { LogOut, User, LayoutDashboard, ClipboardCheck, CalendarDays } from "lucide-react"
 import { TokenPayload } from "@/lib/auth"
 import { NavMain } from "@/components/sidebar/nav-main"
 
@@ -39,6 +39,11 @@ const userNavData = [
     title: "Attendance",
     url: "/attendance",
     icon: ClipboardCheck,
+  },
+  {
+    title: "Leaves",
+    url: "/leaves",
+    icon: CalendarDays,
   },
 ]
 

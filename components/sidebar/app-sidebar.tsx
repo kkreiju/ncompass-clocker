@@ -15,6 +15,7 @@ import {
   Settings,
   UserCheck,
   UsersRound,
+  CalendarDays,
 } from "lucide-react"
 
 import { NavMain } from "@/components/sidebar/nav-main"
@@ -69,7 +70,12 @@ const data: {
       icon: FileText,
     },
     {
-      title: "System",
+      title: "Leaves",
+      url: "/admin/leaves",
+      icon: CalendarDays,
+    },
+    {
+      title: "Team",
       icon: Settings,
       items: [
         {
@@ -77,8 +83,8 @@ const data: {
           url: "/admin/users",
         },
         {
-          title: "Teams",
-          url: "/admin/teams",
+          title: "Departments",
+          url: "/admin/departments",
         },
       ],
     },

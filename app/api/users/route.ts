@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { AuthService } from '@/lib/auth';
 import { AttendanceService } from '@/models/AttendanceLog';
+import { LeaveService } from '@/models/Leave';
 
 export async function GET(request: NextRequest) {
   try {
@@ -126,7 +127,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { userId, name, email, password } = await request.json();
+    const { userId, name, email, password, profileURL } = await request.json();
 
     if (!userId || !name || !email) {
       return NextResponse.json(
@@ -163,14 +164,20 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date()
     };
 
+    // Update profileURL if provided
+    if (profileURL !== undefined) {
+      updateData.profileURL = profileURL;
+    }
+
     // Only update password if provided
     if (password && password.trim()) {
       updateData.password = await AuthService.hashPassword(password);
     }
 
-    // Check if name or email changed
+    // Check if name, email, or profileURL changed
     const nameChanged = name !== existingUser.name;
     const emailChanged = email.toLowerCase() !== existingUser.email.toLowerCase();
+    const profileURLChanged = profileURL !== undefined && profileURL !== existingUser.profileURL;
 
     // Update user
     const updatedUser = await User.findByIdAndUpdate(
@@ -179,8 +186,8 @@ export async function PUT(request: NextRequest) {
       { new: true }
     ).select('-password');
 
-    // If name or email changed, update all attendance records
-    if (nameChanged || emailChanged) {
+    // If name, email, or profileURL changed, update all attendance and leave records
+    if (nameChanged || emailChanged || profileURLChanged) {
       try {
         await AttendanceService.updateUserInAttendanceRecords(
           userId,
@@ -191,6 +198,19 @@ export async function PUT(request: NextRequest) {
         console.error('Error updating attendance records:', attendanceError);
         // Don't fail the entire request, but log the error
         // The user update succeeded, but attendance records might be inconsistent
+      }
+
+      try {
+        await LeaveService.updateUserInLeaveRecords(
+          userId,
+          name,
+          email.toLowerCase(),
+          profileURL
+        );
+      } catch (leaveError) {
+        console.error('Error updating leave records:', leaveError);
+        // Don't fail the entire request, but log the error
+        // The user update succeeded, but leave records might be inconsistent
       }
     }
 
