@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# codeql
+codeql-db/
+codeql-custom-queries-javascript/
+
+#sarif
+*.sarif
