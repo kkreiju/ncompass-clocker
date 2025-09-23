@@ -1,4 +1,5 @@
 export { AttendanceScanner } from './attendance-scanner';
+export { FaceScanner } from './face-scanner';
 export { ScannerVideo } from './scanner-video';
 export { ScannerStatus } from './scanner-status';
 export { ScannerControls } from './scanner-controls';

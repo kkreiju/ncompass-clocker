@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 interface ScanResult {
-  qrCode: string;
   timestamp: number;
   success: boolean;
   message: string;
   action?: 'clock-in' | 'clock-out';
+  type?: 'qr' | 'face';
+  qrCode?: string;
+  imageData?: string;
+  userName?: string;
 }
 
 interface ScanHistoryProps {
@@ -52,7 +55,7 @@ export function ScanHistory({ scanHistory, onClearHistory }: ScanHistoryProps) {
           <div className="text-center py-8 text-muted-foreground">
             <ScanLine className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No scans yet</p>
-            <p className="text-sm">Scan a QR code to see history here</p>
+            <p className="text-sm">Scan to see history here</p>
           </div>
         ) : (
           <div className="space-y-3 max-h-170 overflow-y-auto">
@@ -70,15 +73,22 @@ export function ScanHistory({ scanHistory, onClearHistory }: ScanHistoryProps) {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-1">{scan.message}</p>
+                {scan.userName && (
+                  <p className="text-sm font-medium mb-1">User: {scan.userName}</p>
+                )}
                 {scan.action && (
                   <Badge variant="outline" className="text-xs">
                     {scan.action === 'clock-in' ? 'Clock In' : 'Clock Out'}
                   </Badge>
                 )}
-                <Separator className="my-2" />
-                <p className="font-mono text-xs break-all bg-background p-2 rounded border">
-                  {scan.qrCode.length > 30 ? `${scan.qrCode.substring(0, 30)}...` : scan.qrCode}
-                </p>
+                {scan.type === 'qr' && scan.qrCode && (
+                  <>
+                    <Separator className="my-2" />
+                    <p className="font-mono text-xs break-all bg-background p-2 rounded border">
+                      {scan.qrCode.length > 30 ? `${scan.qrCode.substring(0, 30)}...` : scan.qrCode}
+                    </p>
+                  </>
+                )}
               </div>
             ))}
           </div>

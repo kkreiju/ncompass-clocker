@@ -14,11 +14,14 @@ import { ScannerInstructions } from './scanner-instructions';
 import { ScannerHeader } from './scanner-header';
 
 interface ScanResult {
-  qrCode: string;
+  qrCode?: string;
   timestamp: number;
   success: boolean;
   message: string;
   action?: 'clock-in' | 'clock-out';
+  type?: 'qr' | 'face';
+  imageData?: string;
+  userName?: string;
 }
 
 interface AttendanceScannerProps {
@@ -154,7 +157,8 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
           timestamp: currentTime,
           success: true,
           message: data.message,
-          action: data.attendance?.action
+          action: data.attendance?.action,
+          type: 'qr'
         };
 
         setMessage(data.message);
@@ -170,7 +174,8 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
             qrCode,
             timestamp: currentTime,
             success: false,
-            message: 'User not recognized. Please check with your administrator.'
+            message: 'User not recognized. Please check with your administrator.',
+            type: 'qr'
           };
           setMessage('User not recognized. Please check with your administrator.');
           setMessageType('warning');
@@ -180,7 +185,8 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
             qrCode,
             timestamp: currentTime,
             success: false,
-            message: data.error || 'Failed to process attendance'
+            message: data.error || 'Failed to process attendance',
+            type: 'qr'
           };
 
           setMessage(data.error || 'Failed to process attendance');
@@ -203,7 +209,8 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
         qrCode,
         timestamp: currentTime,
         success: false,
-        message: 'Network error. Please try again.'
+        message: 'Network error. Please try again.',
+        type: 'qr'
       };
 
       setMessage('Network error. Please try again.');
@@ -256,6 +263,7 @@ export function AttendanceScanner({ className, onScanResult }: AttendanceScanner
               ref={videoRef}
               scanning={scanning}
               loading={loading}
+              type="qr"
             />
 
             <ScannerStatus

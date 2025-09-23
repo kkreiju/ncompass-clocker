@@ -7,10 +7,11 @@ interface ScannerVideoProps {
   scanning: boolean;
   loading: boolean;
   className?: string;
+  type?: 'qr' | 'face';
 }
 
 export const ScannerVideo = forwardRef<HTMLVideoElement, ScannerVideoProps>(
-  ({ scanning, loading, className }, ref) => {
+  ({ scanning, loading, className, type = 'qr' }, ref) => {
     return (
       <div className={`relative bg-black rounded-lg overflow-hidden ${className}`} style={{ aspectRatio: '1' }}>
         <video
@@ -20,7 +21,9 @@ export const ScannerVideo = forwardRef<HTMLVideoElement, ScannerVideoProps>(
           muted
           autoPlay
           style={{
-            filter: 'contrast(1.2) brightness(1.1) saturate(1.1)', // Enhanced contrast for better QR detection
+            filter: type === 'qr'
+              ? 'contrast(1.2) brightness(1.1) saturate(1.1)' // Enhanced contrast for better QR detection
+              : 'contrast(1.0) brightness(1.0) saturate(1.0)', // Natural colors for face recognition
           }}
         />
 
