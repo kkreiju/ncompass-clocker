@@ -24,10 +24,17 @@ export async function connectDB(): Promise<typeof mongoose> {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      bufferCommands: true, // Allow buffering while connecting
+      serverSelectionTimeoutMS: 10000, // 10s to select server
+      socketTimeoutMS: 45000, // 45s socket timeout
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      maxIdleTimeMS: 30000,
+      connectTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('MongoDB connected successfully');
       return mongoose;
     });
   }

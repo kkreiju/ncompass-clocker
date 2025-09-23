@@ -5,6 +5,9 @@ export interface IUser extends Document {
   email: string;
   password: string;
   profileURL?: string;
+  profilePicture?: string;
+  faceRegistered?: boolean;
+  faceData?: any;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,7 +40,7 @@ const UserSchema: Schema = new Schema(
       type: String,
       required: false,
       default: '',
-    },
+    }
   },
   {
     timestamps: true,

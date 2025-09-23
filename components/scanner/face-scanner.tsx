@@ -168,17 +168,21 @@ export function FaceScanner({ className, onScanResult }: FaceScannerProps) {
       const data = await response.json();
 
       if (response.ok) {
+        // Handle response in same format as QR scanner
+        const attendanceAction = data.attendance?.action;
+        const message = data.message || `Successfully ${attendanceAction === 'clock-in' ? 'clocked in' : 'clocked out'}`;
+
         const scanResult: ScanResult = {
           imageData,
           timestamp: currentTime,
           success: true,
-          message: data.message || 'Face recognized successfully',
-          userName: data.userName,
-          action: data.action,
+          message: message,
+          userName: data.attendance?.userName,
+          action: attendanceAction,
           type: 'face'
         };
 
-        setMessage(data.message || 'Face recognized successfully');
+        setMessage(message);
         setMessageType('success');
         setScanHistory(prev => [scanResult, ...prev.slice(0, 9)]); // Keep last 10 scans
       } else {
