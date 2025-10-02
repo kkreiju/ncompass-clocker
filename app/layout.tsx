@@ -3,7 +3,7 @@ import { Poppins } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
-import { ChatBubble } from "@/components/ai-chat"
+import { ChatBubbleGate } from "@/components/ai-chat"
 import "./globals.css"
 
 const poppins = Poppins({
@@ -35,7 +35,7 @@ export default function RootLayout({
           storageKey="ncompass-theme"
         >
           {children}
-          <ChatBubble />
+          <ChatBubbleGate />
           <Toaster />
         </ThemeProvider>
       </body>
